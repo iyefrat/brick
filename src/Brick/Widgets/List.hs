@@ -643,3 +643,12 @@ listModify f l =
     case l ^. listSelectedL of
         Nothing -> l
         Just j -> l & listElementsL %~ imap (\i e -> if i == j then f e else e)
+-- | Filter a list. TODO bettter
+listFilter
+  :: (Foldable t, Splittable t, Applicative t, Monoid (t e))
+  => (e -> Bool)
+  -> GenericList n t e
+  -> GenericList n t e
+
+listFilter f ls =
+  foldr (\x xs -> if f x then listInsert 0 x xs else xs) (listClear ls) ls
