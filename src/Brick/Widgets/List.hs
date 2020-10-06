@@ -50,6 +50,7 @@ module Brick.Widgets.List
   , listMoveTo
   , listMoveToElement
   , listFindBy
+  , listFindByOld
   , listMoveUp
   , listMoveDown
   , listMoveByPages
@@ -61,6 +62,7 @@ module Brick.Widgets.List
   , listClear
   , listReverse
   , listModify
+  , listFilter
 
   -- * Attributes
   , listAttr
@@ -585,6 +587,18 @@ listFindBy :: (Foldable t, Splittable t)
            -> GenericList n t e
            -> GenericList n t e
 listFindBy test l =
+    let start = maybe 0 (+1) (l ^. listSelectedL)
+        (right,left) = splitAt start (l ^. listElementsL)
+        resultLeft = find (test . snd) . zip [0..] . toList $ left
+        resultRight = find (test . snd) . zip [0..] . toList $ right
+    in maybe (maybe id (set listSelectedL . Just . fst) resultRight)
+        (set listSelectedL . Just . (start +) . fst) resultLeft l
+
+listFindByOld :: (Foldable t, Splittable t)
+           => (e -> Bool)
+           -> GenericList n t e
+           -> GenericList n t e
+listFindByOld test l =
     let start = maybe 0 (+1) (l ^. listSelectedL)
         (_, t) = splitAt start (l ^. listElementsL)
         result = find (test . snd) . zip [0..] . toList $ t
