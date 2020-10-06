@@ -150,7 +150,7 @@ editor :: Z.GenericTextZipper a
        -> a
        -- ^ The initial content
        -> Editor a n
-editor name limit s = Editor (Z.textZipper (Z.lines s) limit) name
+editor name limit s = Editor (Z.gotoEOL $ Z.textZipper (Z.lines s) limit) name
 
 -- | Apply an editing operation to the editor's contents. Bear in mind
 -- that you should only apply zipper operations that operate on the
