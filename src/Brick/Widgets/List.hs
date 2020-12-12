@@ -62,7 +62,6 @@ module Brick.Widgets.List
   , listClear
   , listReverse
   , listModify
-  , listFilter
 
   -- * Attributes
   , listAttr
@@ -75,7 +74,7 @@ module Brick.Widgets.List
   )
 where
 
-import Prelude hiding (reverse, splitAt)
+import Prelude hiding (reverse, splitAt, filter)
 
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>), (<*>), pure)
@@ -98,6 +97,7 @@ import qualified Data.Sequence as Seq
 import Graphics.Vty (Event(..), Key(..), Modifier(..))
 import qualified Data.Vector as V
 import GHC.Generics (Generic)
+import Data.Witherable.Class
 
 import Brick.Types
 import Brick.Main (lookupViewport)
@@ -657,12 +657,8 @@ listModify f l =
     case l ^. listSelectedL of
         Nothing -> l
         Just j -> l & listElementsL %~ imap (\i e -> if i == j then f e else e)
--- | Filter a list. TODO bettter
-listFilter
-  :: (Foldable t, Splittable t, Applicative t, Monoid (t e))
-  => (e -> Bool)
-  -> GenericList n t e
-  -> GenericList n t e
 
-listFilter f ls =
-  foldr (\x xs -> if f x then listInsert 0 x xs else xs) (listClear ls) ls
+instance Filterable t => Filterable (GenericList n t) where
+  catMaybes l = l & listElementsL %~ catMaybes
+
+instance (Traversable t, Filterable t) => Witherable (GenericList n t) where
